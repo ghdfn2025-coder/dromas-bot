@@ -29,7 +29,16 @@ class DromasBot(commands.Bot):
             synced = await self.tree.sync()
             print(f"전역 명령어 동기화 완료: {len(synced)}개")
 
-    async def on_ready(self) -> None:
+    async def on_ready(self):
+        activity = discord.CustomActivity(
+            name="/도움말 | 뭇별 서버 전용봇"
+        )
+    
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=activity
+        )
+    
         print(f"{self.user} 로그인 완료")
 
 
