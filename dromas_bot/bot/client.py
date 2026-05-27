@@ -31,7 +31,7 @@ class DromasBot(commands.Bot):
 
     async def on_ready(self):
         activity = discord.CustomActivity(
-            name="/도움말 | 뭇별 서버 전용봇"
+            name="/도움말 | 선로 서버 전용봇"
         )
     
         await self.change_presence(
