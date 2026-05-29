@@ -28,7 +28,7 @@ class BasicCog(commands.Cog):
         embed.add_field(name="/드로마스입양", value="새 드로마스를 데려와 이름을 붙입니다.", inline=False)
         embed.add_field(name="/내드로마스", value="내가 돌보는 드로마스 목록을 봅니다.", inline=False)
         embed.add_field(name="/드로마스보기", value="특정 드로마스의 상태를 봅니다.", inline=False)
-        embed.add_field(name="/드로마스 강화", value="쿨타임 후 드로마스를 강화합니다. 성공 시 레벨 상승, 실패 시 하락 또는 꽃바다로 갈 수 있습니다.", inline=False)
+        embed.add_field(name="/드로마스강화", value="쿨타임 후 드로마스를 강화합니다. 성공 시 레벨 상승, 실패 시 하락 또는 꽃바다로 갈 수 있습니다.", inline=False)
         embed.add_field(name="/드로마스이름변경", value="드로마스의 이름을 바꿉니다.", inline=False)
         embed.add_field(name="/드로마스방생", value="확인 버튼을 거쳐 드로마스를 떠나보냅니다.", inline=False)
         embed.add_field(name="/오늘의운세", value="한국 시간 기준 하루 1회 고정 운세를 봅니다.", inline=False)
