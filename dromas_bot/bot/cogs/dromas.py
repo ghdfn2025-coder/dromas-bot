@@ -29,14 +29,62 @@ def validate_name(name: str) -> str | None:
 
 
 def enhance_rates(level: int) -> tuple[int, int, int]:
-    flower_chance = min(max(level - 7, 0) * 2, 25)
-    fail_chance = min(15 + level * 4, 70)
+    if level < 80:
+        flower_chance = 0
+    elif level < 140:
+        flower_chance = 1
+    elif level < 200:
+        flower_chance = 2
+    else:
+        flower_chance = 3
 
-    if fail_chance + flower_chance >= 95:
-        fail_chance = 95 - flower_chance
+    fail_chance = min(8 + level // 5, 50)
 
     success_chance = 100 - fail_chance - flower_chance
     return success_chance, fail_chance, flower_chance
+
+
+def random_success_gain(level: int) -> int:
+    weights = []
+
+    for gain in range(1, 11):
+        weight = max(1, 35 - level // 4 - gain * 3)
+
+        if level < 30:
+            weight += max(0, 14 - gain)
+
+        if level >= 100 and gain >= 7:
+            weight = max(1, weight // 3)
+
+        if level >= 160 and gain >= 8:
+            weight = 1
+
+        if level >= 200 and gain >= 6:
+            weight = 1
+
+        weights.append(weight)
+
+    return random.choices(
+        population=list(range(1, 11)),
+        weights=weights,
+        k=1,
+    )[0]
+
+
+def random_fail_loss(level: int) -> int:
+    if level < 30:
+        return random.randint(1, 2)
+
+    if level < 80:
+        return random.randint(2, 6)
+
+    if level < 140:
+        return random.randint(5, 15)
+
+    if level < 200:
+        return random.randint(10, 30)
+
+    return random.randint(20, 50)
 
 
 def profile_embed(dromas: dict) -> discord.Embed:
@@ -117,11 +165,6 @@ class ReleaseConfirmView(discord.ui.View):
 
 
 class DromasCog(commands.Cog):
-    dromas_group = app_commands.Group(
-        name="드로마스",
-        description="드로마스 관련 명령어입니다.",
-    )
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -214,8 +257,8 @@ class DromasCog(commands.Cog):
 
         await interaction.response.send_message(embed=profile_embed(dromas))
 
-    @dromas_group.command(
-        name="강화",
+    @app_commands.command(
+        name="드로마스강화",
         description="드로마스를 강화합니다. 성공하면 레벨 상승, 실패하면 하락하거나 꽃바다로 갈 수 있습니다.",
     )
     @app_commands.describe(이름="강화할 드로마스의 이름")
@@ -253,6 +296,7 @@ class DromasCog(commands.Cog):
 
         if roll <= flower_chance:
             name = dromas["name"]
+
             user_data["dromases"] = [
                 item for item in user_data.get("dromases", [])
                 if item.get("name") != name
@@ -278,7 +322,9 @@ class DromasCog(commands.Cog):
 
         if roll <= flower_chance + fail_chance:
             old_level = level
-            new_level = max(1, level - 1)
+            loss = random_fail_loss(level)
+            new_level = max(1, level - loss)
+
             dromas["level"] = new_level
             dromas["exp"] = 0
             store.save(data)
@@ -287,7 +333,8 @@ class DromasCog(commands.Cog):
                 title="강화 실패",
                 description=(
                     f"우우웅... **{dromas['name']}**의 강화가 실패했어.\n\n"
-                    f"Lv.{old_level} → Lv.{new_level}\n\n"
+                    f"Lv.{old_level} → Lv.{new_level}\n"
+                    f"하락 폭: **-{old_level - new_level}**\n\n"
                     "드로마스가 살짝 흔들렸지만, 아직 네 곁에 있어."
                 ),
                 color=ERROR_COLOR,
@@ -299,7 +346,9 @@ class DromasCog(commands.Cog):
             return
 
         old_level = level
-        new_level = level + 1
+        gain = random_success_gain(level)
+        new_level = level + gain
+
         dromas["level"] = new_level
         dromas["exp"] = 0
         store.save(data)
@@ -308,7 +357,8 @@ class DromasCog(commands.Cog):
             title="강화 성공",
             description=(
                 f"삐빅삐빅! **{dromas['name']}**의 강화가 성공했어!\n\n"
-                f"Lv.{old_level} → Lv.{new_level}\n\n"
+                f"Lv.{old_level} → Lv.{new_level}\n"
+                f"상승 폭: **+{gain}**\n\n"
                 "몸집이 아주 조금 더 동그래지고, 기록 장치가 반짝였어.\n"
                 "“우웅!”"
             ),
