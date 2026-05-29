@@ -30,14 +30,26 @@ class DromasBot(commands.Bot):
                 print(f"확장 로드 실패: {extension}")
                 raise e
 
-        if GUILD_ID:
-            guild = discord.Object(id=int(GUILD_ID))
-            synced = await self.tree.sync(guild=guild)
-            print(f"테스트 서버 명령어 동기화 완료: {len(synced)}개")
-        else:
-            synced = await self.tree.sync()
-            print(f"전역 명령어 동기화 완료: {len(synced)}개")
-
+    if GUILD_ID:
+        guild = discord.Object(id=int(GUILD_ID))
+    
+        self.tree.copy_global_to(guild=guild)
+    
+        synced = await self.tree.sync(guild=guild)
+    
+        print(f"테스트 서버 명령어 동기화 완료: {len(synced)}개")
+    
+        for command in synced:
+            print(f"/{command.name}")
+    
+    else:
+        synced = await self.tree.sync()
+    
+        print(f"전역 명령어 동기화 완료: {len(synced)}개")
+    
+        for command in synced:
+            print(f"/{command.name}")
+            
     async def on_ready(self) -> None:
         activity = discord.CustomActivity(
             name="/도움말 | 선로 서버 전용봇"
