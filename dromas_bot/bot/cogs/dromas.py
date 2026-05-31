@@ -241,6 +241,47 @@ class DromasCog(commands.Cog):
         embed.set_footer(text="보고 싶은 드로마스가 있다면 /드로마스보기 를 사용해줘.")
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="드로마스순위", description="서버 전체 드로마스 레벨 순위를 봅니다.")
+    async def ranking(self, interaction: discord.Interaction) -> None:
+        data = store.load()
+        users = data.get("users", {})
+
+        ranking_list = []
+
+        for user_id, user_data in users.items():
+            for dromas in user_data.get("dromases", []):
+                ranking_list.append({
+                    "user_id": user_id,
+                    "name": dromas.get("name", "이름 없는 드로마스"),
+                    "level": int(dromas.get("level", 1)),
+                })
+
+        if not ranking_list:
+            await interaction.response.send_message(
+                "우웅... 아직 순위에 등록된 드로마스가 없어.",
+                ephemeral=True,
+            )
+            return
+
+        ranking_list.sort(key=lambda item: item["level"], reverse=True)
+
+        top_list = ranking_list[:10]
+
+        lines = []
+        for idx, item in enumerate(top_list, start=1):
+            lines.append(
+                f"**{idx}위.** <@{item['user_id']}> — **{item['name']}** / Lv.{item['level']}"
+            )
+
+        embed = discord.Embed(
+            title="드로마스 레벨 순위",
+            description="\n".join(lines),
+            color=EMBED_COLOR,
+        )
+        embed.set_footer(text="매주 월요일 기준으로 기록이 초기화됩니다.")
+
+        await interaction.response.send_message(embed=embed)
+
     @app_commands.command(name="드로마스보기", description="특정 드로마스의 상태를 확인합니다.")
     @app_commands.describe(이름="확인할 드로마스의 이름")
     async def view(self, interaction: discord.Interaction, 이름: str) -> None:
