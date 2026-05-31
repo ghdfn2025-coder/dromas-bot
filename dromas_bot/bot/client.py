@@ -26,33 +26,29 @@ class DromasBot(commands.Bot):
             await self.load_extension(extension)
             print(f"확장 로드 완료: {extension}")
 
+        print(f"현재 등록된 명령어 수: {len(self.tree.get_commands())}")
+        for command in self.tree.get_commands():
+            print(f"현재 명령어: /{command.name}")
+
         if GUILD_ID:
             guild = discord.Object(id=int(GUILD_ID))
 
-            # 길드 명령어 전부 삭제
             self.tree.clear_commands(guild=guild)
-            synced = await self.tree.sync(guild=guild)
-            print(f"길드 명령어 삭제 완료: {len(synced)}개")
+            await self.tree.sync(guild=guild)
+            print("길드 명령어 삭제 완료")
 
-            # 현재 코드의 명령어 다시 등록
             self.tree.copy_global_to(guild=guild)
             synced = await self.tree.sync(guild=guild)
             print(f"길드 명령어 재등록 완료: {len(synced)}개")
 
-            for command in synced:
-                print(f"/{command.name}")
         else:
-            # 전역 명령어 전부 삭제
-            self.tree.clear_commands(guild=None)
-            synced = await self.tree.sync()
-            print(f"전역 명령어 삭제 완료: {len(synced)}개")
-
-            # 현재 코드의 명령어 다시 등록
+            # 전역 명령어는 clear_commands 하면 현재 tree까지 비워져서
+            # 여기서는 그냥 현재 코드 기준으로 다시 sync만 함
             synced = await self.tree.sync()
             print(f"전역 명령어 재등록 완료: {len(synced)}개")
 
-            for command in synced:
-                print(f"/{command.name}")
+        for command in synced:
+            print(f"/{command.name}")
             
     async def on_ready(self) -> None:
         activity = discord.CustomActivity(
