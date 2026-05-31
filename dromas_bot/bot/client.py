@@ -24,29 +24,22 @@ class DromasBot(commands.Bot):
     async def setup_hook(self) -> None:
         for extension in EXTENSIONS:
             await self.load_extension(extension)
-    
-        guilds = self.guilds
-    
-        for guild in guilds:
-            try:
-                self.tree.clear_commands(guild=guild)
-                await self.tree.sync(guild=guild)
-                print(f"{guild.name} 길드 명령어 삭제 완료")
-            except Exception as e:
-                print(f"{guild.name} 삭제 실패: {e}")
-    
-        synced = await self.tree.sync()
-        print(f"전역 명령어 재등록 완료: {len(synced)}개")
+            print(f"확장 로드 완료: {extension}")
+
+        if GUILD_ID:
+            guild = discord.Object(id=int(GUILD_ID))
+            self.tree.copy_global_to(guild=guild)
+
+            synced = await self.tree.sync(guild=guild)
+            print(f"테스트 서버 명령어 동기화 완료: {len(synced)}개")
+        else:
+            synced = await self.tree.sync()
+            print(f"전역 명령어 동기화 완료: {len(synced)}개")
+
+        for command in synced:
+            print(f"/{command.name}")
 
     async def on_ready(self) -> None:
-        for guild in self.guilds:
-            try:
-                self.tree.clear_commands(guild=guild)
-                await self.tree.sync(guild=guild)
-                print(f"{guild.name} 길드 명령어 삭제 완료")
-            except Exception as e:
-                print(f"{guild.name} 길드 명령어 삭제 실패: {e}")
-
         activity = discord.CustomActivity(
             name="/도움말"
         )
@@ -57,6 +50,7 @@ class DromasBot(commands.Bot):
         )
 
         print(f"{self.user} 로그인 완료")
+
 
 def run_bot() -> None:
     if not DISCORD_TOKEN:
