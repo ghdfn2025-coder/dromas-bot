@@ -265,7 +265,7 @@ class DromasCog(commands.Cog):
 
         ranking_list.sort(key=lambda item: item["level"], reverse=True)
 
-        top_list = ranking_list[:10]
+        top_list = ranking_list[:20]
 
         lines = []
         for idx, item in enumerate(top_list, start=1):
