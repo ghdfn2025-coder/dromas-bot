@@ -23,30 +23,34 @@ class DromasBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         for extension in EXTENSIONS:
-            try:
-                await self.load_extension(extension)
-                print(f"확장 로드 완료: {extension}")
-            except Exception as e:
-                print(f"확장 로드 실패: {extension}")
-                raise e
+            await self.load_extension(extension)
+            print(f"확장 로드 완료: {extension}")
 
         if GUILD_ID:
             guild = discord.Object(id=int(GUILD_ID))
-        
-            self.tree.copy_global_to(guild=guild)
-        
+
+            # 길드 명령어 전부 삭제
+            self.tree.clear_commands(guild=guild)
             synced = await self.tree.sync(guild=guild)
-        
-            print(f"테스트 서버 명령어 동기화 완료: {len(synced)}개")
-        
+            print(f"길드 명령어 삭제 완료: {len(synced)}개")
+
+            # 현재 코드의 명령어 다시 등록
+            self.tree.copy_global_to(guild=guild)
+            synced = await self.tree.sync(guild=guild)
+            print(f"길드 명령어 재등록 완료: {len(synced)}개")
+
             for command in synced:
                 print(f"/{command.name}")
-        
         else:
+            # 전역 명령어 전부 삭제
+            self.tree.clear_commands(guild=None)
             synced = await self.tree.sync()
-        
-            print(f"전역 명령어 동기화 완료: {len(synced)}개")
-        
+            print(f"전역 명령어 삭제 완료: {len(synced)}개")
+
+            # 현재 코드의 명령어 다시 등록
+            synced = await self.tree.sync()
+            print(f"전역 명령어 재등록 완료: {len(synced)}개")
+
             for command in synced:
                 print(f"/{command.name}")
             
