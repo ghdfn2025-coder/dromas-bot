@@ -40,7 +40,7 @@ class FortuneCog(commands.Cog):
         embed.add_field(name="운명의 길 기록", value=fortune["path_text"], inline=False)
         embed.add_field(name="속성 기록", value=fortune["attribute_text"], inline=False)
         embed.add_field(name="드로마스의 한마디", value=f"“{fortune['line']}”", inline=False)
-        embed.set_footer(text="한국 시간 기준 매일 오전 12시에 새 운세로 바뀝니다.")
+        embed.set_footer(text="매일 오전 12시에 새 운세로 바뀝니다.")
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:
