@@ -24,31 +24,19 @@ class DromasBot(commands.Bot):
     async def setup_hook(self) -> None:
         for extension in EXTENSIONS:
             await self.load_extension(extension)
-            print(f"확장 로드 완료: {extension}")
-
-        print(f"현재 등록된 명령어 수: {len(self.tree.get_commands())}")
-        for command in self.tree.get_commands():
-            print(f"현재 명령어: /{command.name}")
-
-        if GUILD_ID:
-            guild = discord.Object(id=int(GUILD_ID))
-
-            self.tree.clear_commands(guild=guild)
-            await self.tree.sync(guild=guild)
-            print("길드 명령어 삭제 완료")
-
-            self.tree.copy_global_to(guild=guild)
-            synced = await self.tree.sync(guild=guild)
-            print(f"길드 명령어 재등록 완료: {len(synced)}개")
-
-        else:
-            # 전역 명령어는 clear_commands 하면 현재 tree까지 비워져서
-            # 여기서는 그냥 현재 코드 기준으로 다시 sync만 함
-            synced = await self.tree.sync()
-            print(f"전역 명령어 재등록 완료: {len(synced)}개")
-
-        for command in synced:
-            print(f"/{command.name}")
+    
+        guilds = self.guilds
+    
+        for guild in guilds:
+            try:
+                self.tree.clear_commands(guild=guild)
+                await self.tree.sync(guild=guild)
+                print(f"{guild.name} 길드 명령어 삭제 완료")
+            except Exception as e:
+                print(f"{guild.name} 삭제 실패: {e}")
+    
+        synced = await self.tree.sync()
+        print(f"전역 명령어 재등록 완료: {len(synced)}개")
             
     async def on_ready(self) -> None:
         activity = discord.CustomActivity(
