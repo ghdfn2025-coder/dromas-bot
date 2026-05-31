@@ -37,10 +37,18 @@ class DromasBot(commands.Bot):
     
         synced = await self.tree.sync()
         print(f"전역 명령어 재등록 완료: {len(synced)}개")
-            
+
     async def on_ready(self) -> None:
+        for guild in self.guilds:
+            try:
+                self.tree.clear_commands(guild=guild)
+                await self.tree.sync(guild=guild)
+                print(f"{guild.name} 길드 명령어 삭제 완료")
+            except Exception as e:
+                print(f"{guild.name} 길드 명령어 삭제 실패: {e}")
+
         activity = discord.CustomActivity(
-            name="/도움말 | 선로 서버장 개발"
+            name="/도움말"
         )
 
         await self.change_presence(
@@ -49,7 +57,6 @@ class DromasBot(commands.Bot):
         )
 
         print(f"{self.user} 로그인 완료")
-
 
 def run_bot() -> None:
     if not DISCORD_TOKEN:
